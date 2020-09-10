@@ -1,0 +1,37 @@
+#cloud-config
+
+package_update: true
+package_upgrade: true
+package_reboot_if_required: true
+
+groups:
+    - docker
+
+users:
+    - name: a
+      lock_passwd: true
+      shell: /bin/bash
+      ssh_authorized_keys:
+      - ${init_ssh_public_key}
+      groups: docker
+      sudo: ALL=(ALL) NOPASSWD:ALL
+
+packages:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gnupg-agent
+  - software-properties-common
+  - unattended-upgrades
+
+runcmd:
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+  - add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+  - apt-cache policy docker-ce
+  - apt-get update -y
+  - apt-get install -y docker-ce docker-ce-cli containerd.io
+  - systemctl start docker
+  - systemctl enable docker
+  - docker volume create gitlab-runner-config
+  - docker run --rm --name gitlab-runner-setup -v /var/run/docker.sock:/var/run/docker.sock -v /srv/gitlab-runner/config:/etc/gitlab-runner gitlab/gitlab-runner:latest register --non-interactive --url "${gl_instance}" --registration-token "${gl_registration_token}" --executor "docker" --docker-image alpine:latest --description "docker-runner" --tag-list "docker,do" --run-untagged="true" --locked="false" --access-level="not_protected"
+  - docker run --rm -d --name gitlab-runner --restart always -v /var/run/docker.sock:/var/run/docker.sock -v gitlab-runner-config:/etc/gitlab-runner gitlab/gitlab-runner:latest
