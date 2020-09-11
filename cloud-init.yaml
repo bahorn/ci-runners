@@ -33,5 +33,5 @@ runcmd:
   - systemctl start docker
   - systemctl enable docker
   - docker volume create gitlab-runner-config
-  - docker run --rm --name gitlab-runner-setup -v /var/run/docker.sock:/var/run/docker.sock -v /srv/gitlab-runner/config:/etc/gitlab-runner gitlab/gitlab-runner:latest register --non-interactive --url "${gl_instance}" --registration-token "${gl_registration_token}" --executor "docker" --docker-image alpine:latest --description "docker-runner" --tag-list "docker,do" --run-untagged="true" --locked="false" --access-level="not_protected"
-  - docker run --rm -d --name gitlab-runner --restart always -v /var/run/docker.sock:/var/run/docker.sock -v gitlab-runner-config:/etc/gitlab-runner gitlab/gitlab-runner:latest
+  - docker run --rm --name gitlab-runner-setup -v /var/run/docker.sock:/var/run/docker.sock -v  gitlab-runner-config:/etc/gitlab-runner gitlab/gitlab-runner:latest register --non-interactive --url "${gl_instance}" --registration-token "${gl_registration_token}" --executor "docker" --docker-image alpine:latest --description "docker-runner" --tag-list "docker,do" --run-untagged="true" --locked="false" --access-level="not_protected"
+  - docker run -d --name gitlab-runner --restart always -v /var/run/docker.sock:/var/run/docker.sock -v gitlab-runner-config:/etc/gitlab-runner gitlab/gitlab-runner:latest
